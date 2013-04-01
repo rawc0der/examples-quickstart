@@ -6,6 +6,11 @@ define([
 	
 	var Widget = Backbone.View.extend({
 		/**
+		 * Config option. Enable to log feedback
+		 * @type {Boolean}
+		 */
+		debug: false,
+		/**
 		 * Property holding the currently set template for the Widget
 		 * @type {[type]}
 		 */
@@ -31,19 +36,27 @@ define([
 		 * Property array used to pick Own Properties
 		 * @type {Array}
 		 */
-		_viewOptions : ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events', 'initialize'],
+		_viewOptions : ['model', 'collection', 'el', 'id', 'attributes', 'className', 'debug', 'tagName', 'events', 'initialize'],
 		/**
 		 * @Override Backbone.View.Constructor
 		 */
 		constructor: function(options){
-
 			this.cid = _.uniqueId('view');
 			this._setOptions(options);
 		    this._configure(options || {});
 		    this._initTemplate();
 		    this._ensureElement();
+
+		    this._initSubviews();
+
 		    this.initialize.apply(this, arguments);
 		    this.delegateEvents();
+		},
+		renderTo: function(selector){
+			if(selector){
+				console.log('Attaching to container', selector );
+				selector.html( this.$el );
+			}
 		},
 		/**
 		 * Extends this Widget with a _templateString property.
@@ -60,13 +73,17 @@ define([
          * @return {[void]}         [If the template was processed successfully, then inject it to the DOM]
          */
         renderTemplate: function(dataObj){
-        	console.log('renderTemplate::');
+        	if (this._configOptions.debug) console.log('renderTemplate::', dataObj);
         	var template = this.processTemplate(this.templateString, dataObj);
         	if (template) {
         		this.setElement(template);
         		this.render();
-        		console.log('renderTemplate::template', template);
+        		if (this._configOptions.debug) console.log('renderTemplate::template %c' + template, 'color:#093');
         	}// append to DOM  ?
+        },
+        updateTemplate: function(dataObj){
+        	var newContent = this.processTemplate(this.templateString, dataObj);
+        	$( this.$el ).replaceWith( $(newContent) );
         },
         /**
          * Extends the widget with a _templateEngine OBJECT REFERENCE
@@ -83,11 +100,11 @@ define([
          */
         processTemplate: function(tmpStr, dataObj){
         	if (this.templateEngine && typeof this.templateEngine.template == 'function' ) {
-        		console.log('processTemplate::options Engine');
+        		if (this._configOptions.debug) console.log('processTemplate::options Engine');
         		var template = this.templateEngine.template(tmpStr, dataObj);
         		if ( template ) return template;
         	} else {
-        		console.log('processTemplate::default Engine');
+        		if (this._configOptions.debug) console.log('processTemplate::default Engine');
         		var template = _.template(tmpStr, dataObj);
         		if ( template ) return template;
         	}
@@ -129,18 +146,33 @@ define([
 		 * @return {[type]} [description]
 		 */
 		_initTemplate: function(){
-			console.log('_initTemplate::');
+			if (this._configOptions.debug) console.log('_initTemplate::');
 			if (this._configOptions.renderTemplate !== false) {
 				var dataObj = this.options.templateDataObject || this.templateDataObject;
 				if (this.options && dataObj) {
-					console.log('_initTemplate::dataObj', dataObj);
+					if (this._configOptions.debug) console.log('_initTemplate::dataObj', dataObj);
 					this.renderTemplate( dataObj );
 				}
 			}
 		},
-		
-     
+		/**
+		 *  Holding references to subview Items
+		 *  @type {[Array]}
+		 */
+		_initSubviews: function(){
+			if(this.options && this.options.subviews) {
+				if (this._configOptions.debug) console.log('_initSubviews::', this.options.subviews);
+				_.extend(this, {subviews: this.options.subviews} );
+				var self = this;
+				this.options.subviews.map(function(subviewItem){
+					
+					console.log('%c subview '+ subviewItem , 'color:#055');
 
+					$(self.$el).append( subviewItem.$el[0] );
+				});
+			}
+		}
+        
 	});
 
 	return Widget;

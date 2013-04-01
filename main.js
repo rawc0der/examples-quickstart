@@ -10,17 +10,17 @@ require.config({
 	    templates: 'templates',
 	    controllers: 'modules/controllers',
 	    models: 'modules/models',
-	    views: 'modules/views',
 	    observers: 'modules/observers',
+	    views: 'modules/views',
 	    modules: 'modules',
-	    library: 'library'
+	    utils: 'utils'
 	}
 });
 /**
  * Load main App module
  */
 require([
-	'app',
+	'app'
 
 ], function(App){ 
 	/**

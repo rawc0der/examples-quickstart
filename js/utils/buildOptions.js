@@ -17,9 +17,11 @@ define([
 				defaultsOptions : {
 					WidgetOptions: {
 						setOptions: {
-							viewOptions: ['templateString', 'containerEl', 'childItem', 'observer'],
+							viewOptions: ['marker'],
 							configOptions: {
+								debug: true,
 								renderTemplate: true
+
 							}
 						},
 					}
